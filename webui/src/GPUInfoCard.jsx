@@ -14,6 +14,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import CircularProgressWithLabel from "./ProgressBar";
@@ -45,9 +51,9 @@ export default function GPUInfoCard(props) {
   }, [open]);
 
   return (
-    <Accordion sx={{
+    <Accordion defaultExpanded sx={{
       minWidth: '360px',
-      maxWidth: '720px'
+      maxWidth: '540px'
     }} {...props}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
@@ -57,7 +63,6 @@ export default function GPUInfoCard(props) {
         <Typography align="left" >
           GPU #{props.id}: {props.data.name}
         </Typography>
-        <Button onClick={handleClickOpen()}>Process List</Button>
       </AccordionSummary>
       <Divider />
       <AccordionDetails sx={{
@@ -72,7 +77,10 @@ export default function GPUInfoCard(props) {
               height: '100%'
             }}>
               <CircularProgressWithLabel value={mem_rate * 100} size={72} />
-              <Typography>Memory</Typography>
+              <Typography> <b>Memory</b></Typography>
+              <Typography component="div" variant="caption">
+                {mem_used} / {mem_total} MB
+              </Typography>
             </Stack>
           </Grid>
           <Grid item xs={3}>
@@ -83,24 +91,29 @@ export default function GPUInfoCard(props) {
               height: '100%'
             }}>
               <CircularProgressWithLabel value={power_rate * 100} size={72} />
-              <Typography>Power</Typography>
+              <Typography> <b>Power</b></Typography>
+              <Typography component="div" variant="caption">
+                {power_used} / {power_limit} W
+              </Typography>
             </Stack>
           </Grid>
           <Grid item xs={6}>
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Typography component="div" variant="body1">
-                <b>Memory Usage:</b> <br/> {mem_used} MB / {mem_total} MB
-              </Typography>
-              <Typography component="div" variant="body1">
-                <b>Power Usage:</b> <br/> {power_used} W / {power_limit} W (P{props.data.power.state})
-              </Typography>
+            {/* <Box sx={{ display: 'flex', flexDirection: 'column' }}> */}
+            <Stack spacing={1} sx={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100%'
+            }}>
               <Typography component="div" variant="body1">
                 <b>Fan Speed:</b> {props.data.fan_speed} %
               </Typography>
               <Typography component="div" variant="body1">
-                <b>Temperature:</b> {props.data.temp} C
+                <b>Temperature:</b> {props.data.temp} &#8451;
               </Typography>
-            </Box>
+              <Button onClick={handleClickOpen()}>Running Process</Button>
+            </Stack>
+
+            {/* </Box> */}
           </Grid>
         </Grid>
       </AccordionDetails>
@@ -111,21 +124,39 @@ export default function GPUInfoCard(props) {
         aria-labelledby="scroll-dialog-title"
         aria-describedby="scroll-dialog-description"
       >
-        <DialogTitle id="scroll-dialog-title">Subscribe</DialogTitle>
+        <DialogTitle id="scroll-dialog-title">Running Process List</DialogTitle>
         <DialogContent dividers={true}>
           <DialogContentText
             id="scroll-dialog-description"
             ref={descriptionElementRef}
             tabIndex={-1}
           >
-            {[...new Array(50)]
-              .map(
-                () => `Cras mattis consectetur purus sit amet fermentum.
-Cras justo odio, dapibus ac facilisis in, egestas eget quam.
-Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-Praesent commodo cursus magna, vel scelerisque nisl consectetur et.`,
-              )
-              .join('\n')}
+            <TableContainer>
+              <Table aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>PID</TableCell>
+                    <TableCell>Process ID</TableCell>
+                    <TableCell>Memory Usage</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {props.data.process.map((row) => (
+                    <TableRow
+                      key={row.pid}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {row.pid}
+                      </TableCell>
+                      <TableCell>{row.gpuInstanceId}</TableCell>
+                      <TableCell>{Math.round(row.usedGpuMemory / 1024 / 1024)} MB</TableCell>
+                    </TableRow>
+                  )
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </DialogContentText>
         </DialogContent>
         <DialogActions>

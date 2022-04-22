@@ -7,7 +7,7 @@ from nvml import init_nvml, get_gpus_info, shutdown_nvml
 class WebService(object):
     @cherrypy.expose
     def index(self):
-        return open('index.html')
+        return open('./webui/dist/index.html')
 
 @cherrypy.expose
 class ApiService(object):
@@ -30,13 +30,17 @@ if __name__ == '__main__':
     conf = {
         '/': {
             'tools.sessions.on': True,
-            'tools.staticdir.root': os.path.join(os.path.abspath(os.getcwd()), 'webui', 'dist')
+            'tools.staticdir.root': os.path.abspath(os.getcwd())
         },
         '/api': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
             'tools.response_headers.on': True,
             'tools.response_headers.headers': [('Content-Type', 'text/plain')],
         },
+        '/assets': {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': './webui/dist/assets'
+        }
     }
     webapp = WebService()
     webapp.api = ApiService()

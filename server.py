@@ -44,5 +44,5 @@ if __name__ == '__main__':
     }
     webapp = WebService()
     webapp.api = ApiService()
-    cherrypy.config.update({'server.socket_host': '0.0.0.0'})
+    cherrypy.config.update('server.conf')
     cherrypy.quickstart(webapp, '/', conf)
